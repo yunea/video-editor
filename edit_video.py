@@ -1,16 +1,15 @@
 import whisper
 import subprocess
 import sys
-import os
 
 input_path = sys.argv[1]
 output_path = sys.argv[2]
 
-print(f"📥 Traitement de la vidéo : {input_path}")
+print(f"Traitement de la vidéo : {input_path}")
 
 model = whisper.load_model("base")
 result = model.transcribe(input_path)
-print("🧠 Transcription terminée.")
+print("Transcription terminée.")
 
 # Enlever les silences avec FFmpeg
 command = [
@@ -21,6 +20,6 @@ command = [
     output_path
 ]
 
-print(f"✂️ Montage en cours : {output_path}")
+print(f"Montage en cours : {output_path}")
 subprocess.run(command)
-print("✅ Montage terminé.")
+print("Montage terminé.")
