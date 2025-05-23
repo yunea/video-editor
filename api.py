@@ -17,12 +17,16 @@ async def edit_video(input_path: str = Form(...), output_path: str = Form(...)):
 
     print(f"Montage vers {output_path}...")
     command = [
-        "ffmpeg",
-        "-i", input_path,
-        "-af", "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-35dB",
-        "-c:v", "copy",
-        output_path
+    "ffmpeg",
+    "-i", input_path,
+    "-af", "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-35dB",
+    "-c:v", "libx264",
+    "-preset", "veryfast",
+    "-crf", "23",
+    "-c:a", "aac",
+    output_path
     ]
+
     subprocess.run(command)
     print("Montage terminé.")
 
