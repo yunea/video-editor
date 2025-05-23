@@ -1,9 +1,12 @@
-# api.py
 from fastapi import FastAPI, UploadFile, File, Form
 import subprocess
 import whisper
 
 app = FastAPI()
+
+@app.get("/ping")
+async def ping():
+    return {"status": "ok", "message": "video-editor API is running 🚀"}
 
 @app.post("/edit")
 async def edit_video(input_path: str = Form(...), output_path: str = Form(...)):
