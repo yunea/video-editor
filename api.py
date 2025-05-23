@@ -68,13 +68,17 @@ async def edit_video(filename: str = Form(...)):
     for i, (start, end) in enumerate(keep_segments):
         part_file = os.path.join(TEMP_DIR, f"part_{i}.mp4")
         cmd = [
-            "ffmpeg", "-y",
-            "-i", input_path,
-            "-ss", str(start),
-            "-to", str(end),
-            "-c", "copy",
-            part_file
+          "ffmpeg", "-y",
+          "-ss", str(start),
+          "-to", str(end),
+          "-i", input_path,
+          "-c:v", "libx264",
+          "-preset", "veryfast",
+          "-crf", "23",
+          "-c:a", "aac",
+          part_file
         ]
+
         subprocess.run(cmd, check=True)
         part_files.append(part_file)
 
