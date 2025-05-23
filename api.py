@@ -89,13 +89,18 @@ async def edit_video(filename: str = Form(...)):
 
     # Fusionner les segments
     concat_cmd = [
-        "ffmpeg", "-y",
-        "-f", "concat",
-        "-safe", "0",
-        "-i", list_file_path,
-        "-c", "copy",
-        output_path
+      "ffmpeg", "-y",
+      "-f", "concat",
+      "-safe", "0",
+      "-i", list_file_path,
+      "-c:v", "libx264",
+      "-preset", "veryfast",
+      "-crf", "23",
+      "-c:a", "aac",
+      "-b:a", "128k",
+      output_path
     ]
+
     subprocess.run(concat_cmd, check=True)
     print("Vidéo montée sans silences.")
 
