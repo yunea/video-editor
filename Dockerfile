@@ -1,11 +1,9 @@
-# Dockerfile
 FROM python:3.10-slim
 
-# Installer FFmpeg et Whisper
 RUN apt-get update && apt-get install -y ffmpeg git && \
-  pip install --no-cache-dir openai-whisper
+  pip install --no-cache-dir openai-whisper fastapi uvicorn
 
 WORKDIR /app
-COPY edit_video.py .
+COPY api.py .
 
-ENTRYPOINT ["python", "edit_video.py"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "3000"]
