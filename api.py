@@ -1,16 +1,14 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import FileResponse
 import subprocess
 import whisper
 import os
-import uuid
 
 app = FastAPI()
 
-# Répertoire pour stocker temporairement les vidéos
-UPLOAD_DIR = "/app/videos/input"
+INPUT_DIR = "/app/videos/input"
 OUTPUT_DIR = "/app/videos/output"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(INPUT_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 @app.get("/ping")
@@ -18,41 +16,41 @@ async def ping():
     return {"status": "ok", "message": "video-editor API is running 🚀"}
 
 @app.post("/edit")
-async def edit_video(file: UploadFile = File(...)):
-    # Générer un nom de fichier unique
-    filename = f"{uuid.uuid4().hex}_{file.filename}"
-    input_path = os.path.join(UPLOAD_DIR, filename)
-    output_path = os.path.join(OUTPUT_DIR, f"edited_{filename}")
+async def edit_video(filename: str = Form(...)):
+    input_path = os.path.join(INPUT_DIR, filename)
 
-    # Sauvegarder la vidéo uploadée
-    with open(input_path, "wb") as f:
-        f.write(await file.read())
+    # Vérifie que le fichier existe
+    if not os.path.isfile(input_path):
+        raise HTTPException(status_code=404, detail="Fichier non trouvé.")
 
-    # Transcrire avec Whisper (optionnel pour debug ou future analyse)
+    output_filename = f"edited_{filename}"
+    output_path = os.path.join(OUTPUT_DIR, output_filename)
+
+    # Transcription avec Whisper (utile pour logs ou analyse)
     model = whisper.load_model("base")
     print(f"Transcription de {input_path}...")
     result = model.transcribe(input_path)
     print("Transcription terminée.")
 
-    # Supprimer les silences avec ffmpeg
+    # Suppression des silences avec ffmpeg
     print(f"Montage vers {output_path}...")
     command = [
         "ffmpeg",
-        "-y",  # Forcer l'écrasement s'il existe déjà
+        "-y",
         "-i", input_path,
         "-af", "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-35dB",
-        "-c:v", "libx264",         # Réencoder la vidéo
-        "-preset", "veryfast",     # Vitesse d'encodage
-        "-crf", "23",              # Qualité vidéo
-        "-c:a", "aac",             # Encodage audio
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-crf", "23",
+        "-c:a", "aac",
         output_path
     ]
     subprocess.run(command, check=True)
     print("Montage terminé.")
 
-    # Retourner la vidéo éditée en tant que fichier à télécharger
+    # Retourner la vidéo traitée
     return FileResponse(
         path=output_path,
-        filename=os.path.basename(output_path),
+        filename=output_filename,
         media_type="video/mp4"
     )
