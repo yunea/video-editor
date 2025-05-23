@@ -18,6 +18,7 @@ async def edit_video(input_path: str = Form(...), output_path: str = Form(...)):
     print(f"Montage vers {output_path}...")
     command = [
     "ffmpeg",
+    "-y",  # 👈 Forcer l'écrasement du fichier de sortie
     "-i", input_path,
     "-af", "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-35dB",
     "-c:v", "libx264",
